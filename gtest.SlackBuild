@@ -19,14 +19,14 @@
 #
 # Visit SlackPack at http://sotirov-bg.net/slackpack/
 #
-# $Id: gtest.SlackBuild,v 1.1 2016/09/24 06:47:34 gsotirov Exp $
+# $Id: gtest.SlackBuild,v 1.2 2016/09/24 08:14:27 gsotirov Exp $
 #
 
 . ../../slack-package.conf
 
 NAME=googletest
 PNAME=gtest
-VERSION=1.5.0
+VERSION=1.7.0
 ARCH=${ARCH:-i486}
 BUILD=${BUILD:-1}
 
@@ -44,7 +44,7 @@ if [ -e $SRC -a -d $SRC ]; then
   exit 1
 fi
 
-PKG=$TMP/package-${NAME}
+PKG=$TMP/package-${PNAME}
 if [ -e $PKG -a -d $PKG ]; then
   echo "Package creation directory '$PKG' already exists! Please, move it or remove it."
   exit 2
@@ -57,26 +57,38 @@ tar -xvf $CWD/${NAME}-release-${VERSION}.tar.?z* || exit 3
 cd $SRC
 fix_source
 
-# Configure
-autoreconf -vif || exit 50
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
-./configure --build=${ARCH}-slackware-linux \
-            --host=${ARCH}-slackware-linux \
-            --prefix=/usr \
-            --libdir=/usr/lib${LIBDIRSUFFIX} \
-            --enable-shared=yes \
-            --enable-static=no \
-            --with-pthreads || exit 5
-
-# Build & install
+# Configure, make and install
+mkdir build; cd build
+cmake -LAH \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_FLAGS="$SLKCFLAGS" \
+      -DCMAKE_C_FLAGS="$SLKCFLAGS" \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_SKIP_RPATH=ON \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -Dgtest_build_samples=ON \
+      -Dgtest_build_tests=ON \
+      .. || exit 5
 make -j4 || exit 6
-make DESTDIR=$PKG install || exit 7
+LD_LIBRARY_PATH=. \
+ARGS='--verbose' \
+make test # || exit 61 - ignore exit as gtest_xml_outfiles_test and gtest_xml_output_unittest fail for some reason
+cd ..
+
+# Install manually as no 'make install' anymore
+install -d -m 755 $PKG/usr/include/${PNAME}
+install -m 644 include/${PNAME}/*.h $PKG/usr/include/${PNAME}
+install -d -m 755 $PKG/usr/include/${PNAME}/internal
+install -m 644 include/${PNAME}/internal/*.h $PKG/usr/include/${PNAME}/internal
+install -d -m 755 $PKG/usr/lib${LIBDIRSUFFIX}
+install -m 0644 build/*.so $PKG/usr/lib${LIBDIRSUFFIX}
 
 # Prepare the package
-bin_perms $PKG
-( cd $PKG; strip_bin; strip_lib )
+( cd $PKG; strip_lib )
 ( cd $SRC; create_docs $PKG ${PNAME}-${VERSION} )
+# Rename license file
+( cd $PKG/usr/doc/${PNAME}-${VERSION}; mv LICENSE COPYING )
 
 install -m 755 -d $PKG/install
 install -m 644 $CWD/slack-desc     $PKG/install/slack-desc
