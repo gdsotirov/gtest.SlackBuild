@@ -7,5 +7,7 @@ gtest: automatic test discovery, rich set of assertions, user-defined
 gtest: assertions, death tests, fatal and non-fatal failures, value and type
 gtest: parameterized tests, various options for running the tests and XML test
 gtest: report generation.
+gtest: This package also included Google Mock which is an extension to Google
+gtest: Test for writing and using C++ mock classes.
 gtest:
 gtest: Packaged by Georgi D. Sotirov <gdsotirov@dir.bg>
