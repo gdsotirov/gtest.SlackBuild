@@ -19,7 +19,7 @@
 #
 # Visit SlackPack at http://sotirov-bg.net/slackpack/
 #
-# $Id: gtest.SlackBuild,v 1.3 2016/09/24 10:11:18 gsotirov Exp $
+# $Id: gtest.SlackBuild,v 1.4 2016/09/24 10:27:58 gsotirov Exp $
 #
 
 . ../../slack-package.conf
@@ -97,11 +97,18 @@ cd ../..
 install -d -m 755 ${PKG}/usr/include/${PNAME}
 install    -m 644 ${NAME}/include/${PNAME}/*.h ${PKG}/usr/include/${PNAME}
 install -d -m 755 ${PKG}/usr/include/${PNAME}/internal
-install    -m 644 ${NAME}/include/${PNAME}/internal/*.h ${PKG}/usr/include/${PNAME}/internal
+install    -m 644 ${NAME}/include/${PNAME}/internal/*.h \
+	          ${PKG}/usr/include/${PNAME}/internal
+install -d -m 755 ${PKG}/usr/include/${PNAME}/internal/custom
+install    -m 644 ${NAME}/include/${PNAME}/internal/custom/*.h \
+	          ${PKG}/usr/include/${PNAME}/internal/custom
 install -d -m 755 ${PKG}/usr/include/${PNAME2}
 install    -m 644 ${NAME2}/include/${PNAME2}/*.h ${PKG}/usr/include/${PNAME2}
 install -d -m 755 ${PKG}/usr/include/${PNAME2}/internal
 install    -m 644 ${NAME2}/include/${PNAME2}/internal/*.h ${PKG}/usr/include/${PNAME2}/internal
+install -d -m 755 ${PKG}/usr/include/${PNAME2}/internal/custom
+install    -m 644 ${NAME2}/include/${PNAME2}/internal/custom/*.h \
+	          ${PKG}/usr/include/${PNAME2}/internal/custom
 install -d -m 755 ${PKG}/usr/lib${LIBDIRSUFFIX}
 install    -m 644 ${NAME}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
 install    -m 644 ${NAME2}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
