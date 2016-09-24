@@ -1,0 +1,11 @@
+gtest: GoogleTest (Google's C++ test framework)
+gtest:
+gtest: GoogleTest is Google's framework for writing C++ tests on a variety of
+gtest: platforms (including Linux, Mac OS X, Windows, Cygwin, MingGW, Windows
+gtest: Mobile and Symbian). It is based on xUnit test framework and features
+gtest: automatic test discovery, rich set of assertions, user-defined
+gtest: assertions, death tests, fatal and non-fatal failures, value and type
+gtest: parameterized tests, various options for running the tests and XML test
+gtest: report generation.
+gtest:
+gtest: Packaged by Georgi D. Sotirov <gdsotirov@dir.bg>
