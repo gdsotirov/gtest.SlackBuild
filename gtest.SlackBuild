@@ -19,7 +19,7 @@
 #
 # Visit SlackPack at http://sotirov-bg.net/slackpack/
 #
-# $Id: gtest.SlackBuild,v 1.4 2016/09/24 10:27:58 gsotirov Exp $
+# $Id: gtest.SlackBuild,v 1.5 2016/12/05 19:47:21 gsotirov Exp $
 #
 
 . ../../slack-package.conf
@@ -94,39 +94,61 @@ make -j4 || exit 6
 cd ../..
 
 # Install manually as no 'make install' anymore
+# - Includes
 install -d -m 755 ${PKG}/usr/include/${PNAME}
-install    -m 644 ${NAME}/include/${PNAME}/*.h ${PKG}/usr/include/${PNAME}
+install    -m 644 ${NAME}/include/${PNAME}/*.h* ${PKG}/usr/include/${PNAME}
 install -d -m 755 ${PKG}/usr/include/${PNAME}/internal
-install    -m 644 ${NAME}/include/${PNAME}/internal/*.h \
-	          ${PKG}/usr/include/${PNAME}/internal
+install    -m 644 ${NAME}/include/${PNAME}/internal/*.h* \
+                  ${PKG}/usr/include/${PNAME}/internal
 install -d -m 755 ${PKG}/usr/include/${PNAME}/internal/custom
-install    -m 644 ${NAME}/include/${PNAME}/internal/custom/*.h \
-	          ${PKG}/usr/include/${PNAME}/internal/custom
+install    -m 644 ${NAME}/include/${PNAME}/internal/custom/*.h* \
+                  ${PKG}/usr/include/${PNAME}/internal/custom
 install -d -m 755 ${PKG}/usr/include/${PNAME2}
-install    -m 644 ${NAME2}/include/${PNAME2}/*.h ${PKG}/usr/include/${PNAME2}
+install    -m 644 ${NAME2}/include/${PNAME2}/*.h* ${PKG}/usr/include/${PNAME2}
 install -d -m 755 ${PKG}/usr/include/${PNAME2}/internal
-install    -m 644 ${NAME2}/include/${PNAME2}/internal/*.h ${PKG}/usr/include/${PNAME2}/internal
+install    -m 644 ${NAME2}/include/${PNAME2}/internal/*.h* \
+                  ${PKG}/usr/include/${PNAME2}/internal
 install -d -m 755 ${PKG}/usr/include/${PNAME2}/internal/custom
-install    -m 644 ${NAME2}/include/${PNAME2}/internal/custom/*.h \
-	          ${PKG}/usr/include/${PNAME2}/internal/custom
+install    -m 644 ${NAME2}/include/${PNAME2}/internal/custom/*.h* \
+                  ${PKG}/usr/include/${PNAME2}/internal/custom
+# - gmock_gen and cppclean sources
+install -d -m 755 $PKG/usr/bin
+install    -m 755 ${NAME2}/scripts/generator/gmock_gen.py $PKG/usr/bin/gmock_gen
+install -d -m 755 $PKG/usr/share/${PNAME2}/cpp
+install    -m 644 ${NAME2}/scripts/generator/cpp/* $PKG/usr/share/${PNAME2}/cpp/
+# - Libraries
 install -d -m 755 ${PKG}/usr/lib${LIBDIRSUFFIX}
 install    -m 644 ${NAME}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
 install    -m 644 ${NAME2}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
+# - Sources
+install -d -m 755 ${PKG}/usr/src/
+install    -m 644 ${SRC}/CMakeLists.txt ${PKG}/usr/src/CMakeLists.txt
+cp -a ${SRC}/${NAME}/  ${PKG}/usr/src/
+rm -rf ${PKG}/usr/src/${NAME}/{build,msvc}
+rm -rf ${PKG}/usr/src/${NAME}/test/*.pyc
+cp -a ${SRC}/${NAME2}/ ${PKG}/usr/src/
+rm -rf ${PKG}/usr/src/${NAME2}/{build,msvc}
 
 # Prepare the package
+bin_perms $PKG
 ( cd $PKG; strip_lib )
 ( cd $SRC; create_docs $PKG ${PNAME}-${VERSION} )
 # Rename license file
 DOCDIR=$PKG/usr/doc/${PNAME}-${VERSION}
 ( cd $DOCDIR; mv README.md README )
-install -m 644 ${NAME}/CHANGES       $DOCDIR/CHANGES.gtest
-install -m 644 ${NAME}/CONTRIBUTORS  $DOCDIR/CONTRIBUTORS.gtest
-install -m 644 ${NAME}/LICENSE       $DOCDIR/LICENSE.gtest
-install -m 644 ${NAME2}/CHANGES      $DOCDIR/CHANGES.gmock
-install -m 644 ${NAME2}/CONTRIBUTORS $DOCDIR/CONTRIBUTORS.gmock
-install -m 644 ${NAME2}/LICENSE      $DOCDIR/LICENSE.gmock
+install -m 644 ${NAME}/CHANGES       $DOCDIR/CHANGES.${PNAME}
+install -m 644 ${NAME}/CONTRIBUTORS  $DOCDIR/CONTRIBUTORS.${PNAME}
+install -m 644 ${NAME}/LICENSE       $DOCDIR/LICENSE.${PNAME}
+install -m 644 ${NAME2}/CHANGES      $DOCDIR/CHANGES.${PNAME2}
+install -m 644 ${NAME2}/CONTRIBUTORS $DOCDIR/CONTRIBUTORS.${PNAME2}
+install -m 644 ${NAME2}/LICENSE      $DOCDIR/LICENSE.${PNAME2}
+GEN_DIR=${NAME2}/scripts/generator/
+install -m 644 ${GEN_DIR}/LICENSE    $DOCDIR/LICENSE.gmock_gen
+install -m 644 ${GEN_DIR}/README     $DOCDIR/README.gmock_gen
+install -m 644 ${GEN_DIR}/README.cppclean $DOCDIR/README.cppclean
+
 # GTest and GMock are both with BSD license, so isngle COPYING file is enough
-install -m 644 ${NAME}/LICENSE      $DOCDIR/COPYING
+install -m 644 ${NAME}/LICENSE       $DOCDIR/COPYING
 
 install -m 755 -d $PKG/install
 install -m 644 $CWD/slack-desc     $PKG/install/slack-desc
