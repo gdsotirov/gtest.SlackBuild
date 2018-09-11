@@ -1,0 +1,14 @@
+# See https://github.com/google/googletest/commit/3299a2386cf2a26b486a0ac7a75e50a94bbd1a4b
+# See https://github.com/google/googletest/issues/1825
+diff -urNad googletest-release-1.8.1-oig/googletest/test/gtest_unittest.cc googletest-release-1.8.1/googletest/test/gtest_unittest.cc
+--- googletest-release-1.8.1-oig/googletest/test/gtest_unittest.cc	2018-08-31 18:21:57.000000000 +0300
++++ googletest-release-1.8.1/googletest/test/gtest_unittest.cc	2018-09-11 19:03:55.675703119 +0300
+@@ -2117,7 +2117,7 @@
+ };
+ 
+ // This will test property recording outside of any test or test case.
+-static Environment* record_property_env =
++static Environment* record_property_env GTEST_ATTRIBUTE_UNUSED_ =
+     AddGlobalTestEnvironment(new UnitTestRecordPropertyTestEnvironment);
+ 
+ // This group of tests is for predicate assertions (ASSERT_PRED*, etc)
