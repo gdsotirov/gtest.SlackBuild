@@ -23,10 +23,7 @@
 . ../../slack-package.conf
 
 NAME=googletest
-NAME2=googlemock
-PNAME=gtest
-PNAME2=gmock
-VERSION=1.8.1
+VERSION=1.11.0
 ARCH=${ARCH:-i586}
 BUILD=${BUILD:-1}
 
@@ -44,7 +41,7 @@ if [ -e $SRC -a -d $SRC ]; then
   exit 1
 fi
 
-PKG=$TMP/package-${PNAME}
+PKG=$TMP/package-${NAME}
 if [ -e $PKG -a -d $PKG ]; then
   echo "Package creation directory '$PKG' already exists! Please, move it or remove it."
   exit 2
@@ -62,9 +59,8 @@ if [ -e $CWD/${NAME}-${VERSION}.diff ]; then
   patch --backup --strip=1 --suffix=.orig < $CWD/${NAME}-${VERSION}.diff || exit 4
 fi
 
-# Configure, make and install
-# First GoogleTest
-mkdir $NAME/build; cd $NAME/build
+# Configure
+mkdir build; cd build
 cmake -LAH \
       -DBUILD_SHARED_LIBS=ON \
       -DCMAKE_BUILD_TYPE=Release \
@@ -76,95 +72,35 @@ cmake -LAH \
       -Dgtest_build_samples=ON \
       -Dgtest_build_tests=ON \
       .. || exit 5
-make --jobs 4 || exit 6
-LD_LIBRARY_PATH=. \
-ARGS='--verbose' \
-make test # || exit 61 - ignore exit as more tests (13 out of 41) are failing :-(
-cd ../..
 
-# Then GoogleMock
-mkdir $NAME2/build; cd $NAME2/build
-cmake -LAH \
-      -DBUILD_SHARED_LIBS=ON \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_FLAGS="$SLKCFLAGS" \
-      -DCMAKE_C_FLAGS="$SLKCFLAGS" \
-      -DCMAKE_INSTALL_PREFIX=/usr \
-      -DCMAKE_SKIP_RPATH=ON \
-      -DCMAKE_VERBOSE_MAKEFILE=ON \
-      .. || exit 5
-make --jobs 4 || exit 6
-cd ../..
-
-# Install manually as no 'make install' anymore
-# - Includes
-install --mode 755 --directory ${PKG}/usr/include/${PNAME}
-install --mode 644 ${NAME}/include/${PNAME}/*.h* ${PKG}/usr/include/${PNAME}
-install --mode 755 --directory ${PKG}/usr/include/${PNAME}/internal
-install --mode 644 ${NAME}/include/${PNAME}/internal/*.h* \
-                   ${PKG}/usr/include/${PNAME}/internal
-install --mode 755 --directory ${PKG}/usr/include/${PNAME}/internal/custom
-install --mode 644 ${NAME}/include/${PNAME}/internal/custom/*.h* \
-                   ${PKG}/usr/include/${PNAME}/internal/custom
-install --mode 755 --directory ${PKG}/usr/include/${PNAME2}
-install --mode 644 ${NAME2}/include/${PNAME2}/*.h* ${PKG}/usr/include/${PNAME2}
-install --mode 755 --directory ${PKG}/usr/include/${PNAME2}/internal
-install --mode 644 ${NAME2}/include/${PNAME2}/internal/*.h* \
-                   ${PKG}/usr/include/${PNAME2}/internal
-install --mode 755 --directory ${PKG}/usr/include/${PNAME2}/internal/custom
-install --mode 644 ${NAME2}/include/${PNAME2}/internal/custom/*.h* \
-                   ${PKG}/usr/include/${PNAME2}/internal/custom
-# - gmock_gen and cppclean sources
-install --mode 755 --directory $PKG/usr/bin
-install --mode 755 ${NAME2}/scripts/generator/gmock_gen.py $PKG/usr/bin/gmock_gen
-install --mode 755 --directory $PKG/usr/share/${PNAME2}/cpp
-install --mode 644 ${NAME2}/scripts/generator/cpp/* $PKG/usr/share/${PNAME2}/cpp/
-# - Libraries
-install --mode 755 --directory ${PKG}/usr/lib${LIBDIRSUFFIX}
-install --mode 644 ${NAME}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
-install --mode 644 ${NAME2}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
-# - Sources
-install --mode 755 --directory ${PKG}/usr/src/
-install --mode 644 ${SRC}/CMakeLists.txt ${PKG}/usr/src/CMakeLists.txt
-cp -a ${SRC}/${NAME}/  ${PKG}/usr/src/
-rm -rf ${PKG}/usr/src/${NAME}/{build,msvc}
-rm -rf ${PKG}/usr/src/${NAME}/test/*.pyc
-cp -a ${SRC}/${NAME2}/ ${PKG}/usr/src/
-rm -rf ${PKG}/usr/src/${NAME2}/{build,msvc}
+# Make, test and install
+make --jobs 8 || exit 6
+LD_LIBRARY_PATH=${SRC}/build/lib make test || exit 61
+DESTDIR=$PKG make install || exit 7
+cd ..
 
 # Prepare the package
 bin_perms $PKG
 ( cd $PKG; strip_lib )
-( cd $SRC; create_docs $PKG ${PNAME}-${VERSION} )
-# Rename license file
-DOCDIR=$PKG/usr/doc/${PNAME}-${VERSION}
-( cd $DOCDIR; mv README.md README )
-install --mode 644 ${NAME}/CHANGES       $DOCDIR/CHANGES.${PNAME}
-install --mode 644 ${NAME}/CONTRIBUTORS  $DOCDIR/CONTRIBUTORS.${PNAME}
-install --mode 644 ${NAME}/LICENSE       $DOCDIR/LICENSE.${PNAME}
-install --mode 644 ${NAME2}/CHANGES      $DOCDIR/CHANGES.${PNAME2}
-install --mode 644 ${NAME2}/CONTRIBUTORS $DOCDIR/CONTRIBUTORS.${PNAME2}
-install --mode 644 ${NAME2}/LICENSE      $DOCDIR/LICENSE.${PNAME2}
-GEN_DIR=${NAME2}/scripts/generator/
-install --mode 644 ${GEN_DIR}/LICENSE    $DOCDIR/LICENSE.gmock_gen
-install --mode 644 ${GEN_DIR}/README     $DOCDIR/README.gmock_gen
-install --mode 644 ${GEN_DIR}/README.cppclean $DOCDIR/README.cppclean
-
-# GTest and GMock are both with BSD license, so isngle COPYING file is enough
-install --mode 644 ${NAME}/LICENSE       $DOCDIR/COPYING
+DOCFILES="${DOCFILES} BUILD.bazel CONTRIBUTING.md"
+( cd $SRC; create_docs $PKG ${NAME}-${VERSION} )
+# Rename documents to have COPYING and README
+( cd $PKG/usr/doc/${NAME}-${VERSION};
+  mv LICENSE COPYING
+  mv README.md README )
 
 install --mode 755 --directory $PKG/install
 install --mode 644 $CWD/slack-desc     $PKG/install/slack-desc
 install --mode 644 $CWD/slack-required $PKG/install/slack-required
 
-SBDIR=$PKG/usr/src/slackbuilds/${PNAME}-${VERSION}
+SBDIR=$PKG/usr/src/slackbuilds/${NAME}-${VERSION}
 install --mode 755 --directory $SBDIR
 install --mode 644 $CWD/slack-desc          $SBDIR/slack-desc
 install --mode 644 $CWD/slack-required      $SBDIR/slack-required
 if [ -e $CWD/${NAME}-${VERSION}.diff ]; then
 install --mode 644 $CWD/${NAME}-${VERSION}.diff $SBDIR/${NAME}-${VERSION}.diff
 fi
-install --mode 644 $CWD/${PNAME}.SlackBuild $SBDIR/${PNAME}.SlackBuild
+install --mode 644 $CWD/${NAME}.SlackBuild $SBDIR/${NAME}.SlackBuild
 
 # Pack
 cd $PKG
