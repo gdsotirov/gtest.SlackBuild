@@ -23,6 +23,7 @@
 . ../../slack-package.conf
 
 NAME=googletest
+PNAME=gtest
 VERSION=1.11.0
 ARCH=${ARCH:-i586}
 BUILD=${BUILD:-1}
@@ -41,7 +42,7 @@ if [ -e $SRC -a -d $SRC ]; then
   exit 1
 fi
 
-PKG=$TMP/package-${NAME}
+PKG=$TMP/package-${PNAME}
 if [ -e $PKG -a -d $PKG ]; then
   echo "Package creation directory '$PKG' already exists! Please, move it or remove it."
   exit 2
@@ -55,8 +56,8 @@ cd $SRC
 fix_source
 
 # Apply patch
-if [ -e $CWD/${NAME}-${VERSION}.diff ]; then
-  patch --backup --strip=1 --suffix=.orig < $CWD/${NAME}-${VERSION}.diff || exit 4
+if [ -e $CWD/${PNAME}-${VERSION}.diff ]; then
+  patch --backup --strip=1 --suffix=.orig < $CWD/${PNAME}-${VERSION}.diff || exit 4
 fi
 
 # Configure
@@ -83,9 +84,9 @@ cd ..
 bin_perms $PKG
 ( cd $PKG; strip_lib )
 DOCFILES="${DOCFILES} BUILD.bazel CONTRIBUTING.md"
-( cd $SRC; create_docs $PKG ${NAME}-${VERSION} )
+( cd $SRC; create_docs $PKG ${PNAME}-${VERSION} )
 # Rename documents to have COPYING and README
-( cd $PKG/usr/doc/${NAME}-${VERSION};
+( cd $PKG/usr/doc/${PNAME}-${VERSION};
   mv LICENSE COPYING
   mv README.md README )
 
@@ -95,7 +96,7 @@ install --mode 644 --preserve-timestamps \
 install --mode 644 --preserve-timestamps \
         $CWD/slack-required $PKG/install/slack-required
 
-SBDIR=$PKG/usr/src/slackbuilds/${NAME}-${VERSION}
+SBDIR=$PKG/usr/src/slackbuilds/${PNAME}-${VERSION}
 install --mode 755 --directory $SBDIR
 install --mode 644 --preserve-timestamps \
         $CWD/slack-desc              $SBDIR/slack-desc
@@ -103,14 +104,14 @@ install --mode 644 --preserve-timestamps \
         $CWD/slack-required          $SBDIR/slack-required
 if [ -e $CWD/${NAME}-${VERSION}.diff ]; then
 install --mode 644 --preserve-timestamps \
-        $CWD/${NAME}-${VERSION}.diff $SBDIR/${NAME}-${VERSION}.diff
+        $CWD/${NAME}-${VERSION}.diff $SBDIR/${PNAME}-${VERSION}.diff
 fi
 install --mode 644 --preserve-timestamps \
-        $CWD/${NAME}.SlackBuild      $SBDIR/${NAME}.SlackBuild
+        $CWD/${PNAME}.SlackBuild     $SBDIR/${PNAME}.SlackBuild
 
 # Pack
 cd $PKG
-PKGNAME=${NAME}-${VERSION}-${ARCH}-${BUILD}${MYIN}
+PKGNAME=${PNAME}-${VERSION}-${ARCH}-${BUILD}${MYIN}
 makepkg --chown n --linkadd y $PKG_DIR/${PKGNAME}.txz
 md5sum $PKG_DIR/${PKGNAME}.txz > $PKG_DIR/${PKGNAME}.txz.md5
 install --mode 644 $PKG/install/slack-desc $PKG_DIR/${PKGNAME}.txt
