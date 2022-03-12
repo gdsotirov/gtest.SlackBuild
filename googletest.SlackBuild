@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Slackware build script for GoogleTest
-# Copyright (C) 2016-2020 Georgi D. Sotirov <gdsotirov@gmail.com>
+# Copyright (C) 2016-2022 Georgi D. Sotirov <gdsotirov@gmail.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -35,7 +35,7 @@ CWD=${CWD:-`pwd`}
 PKG_DIR=${PKG_DIR:-/tmp}
 
 if [ ! -e $TMP ]; then
-  mkdir -p $TMP # location to build the source
+  mkdir --parents $TMP # location to build the source
 fi
 
 SRC=$TMP/${NAME}-release-${VERSION}
@@ -49,17 +49,17 @@ if [ -e $PKG -a -d $PKG ]; then
   echo "Package creation directory '$PKG' already exists! Please, move it or remove it."
   exit 2
 fi
-mkdir -p $PKG
+mkdir --parents $PKG
 
 # Extract and fix source
 cd $TMP
-tar -xvf $CWD/${NAME}-release-${VERSION}.tar.?z* || exit 3
+tar --extract --verbose --file=$CWD/${NAME}-release-${VERSION}.tar.gz || exit 3
 cd $SRC
 fix_source
 
 # Apply patch
 if [ -e $CWD/${NAME}-${VERSION}.diff ]; then
-  patch -p1 -b -z.orig < $CWD/${NAME}-${VERSION}.diff || exit 4
+  patch --backup --strip=1 --suffix=.orig < $CWD/${NAME}-${VERSION}.diff || exit 4
 fi
 
 # Configure, make and install
@@ -76,7 +76,7 @@ cmake -LAH \
       -Dgtest_build_samples=ON \
       -Dgtest_build_tests=ON \
       .. || exit 5
-make -j4 || exit 6
+make --jobs 4 || exit 6
 LD_LIBRARY_PATH=. \
 ARGS='--verbose' \
 make test # || exit 61 - ignore exit as more tests (13 out of 41) are failing :-(
@@ -93,39 +93,39 @@ cmake -LAH \
       -DCMAKE_SKIP_RPATH=ON \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
       .. || exit 5
-make -j4 || exit 6
+make --jobs 4 || exit 6
 cd ../..
 
 # Install manually as no 'make install' anymore
 # - Includes
-install -d -m 755 ${PKG}/usr/include/${PNAME}
-install    -m 644 ${NAME}/include/${PNAME}/*.h* ${PKG}/usr/include/${PNAME}
-install -d -m 755 ${PKG}/usr/include/${PNAME}/internal
-install    -m 644 ${NAME}/include/${PNAME}/internal/*.h* \
-                  ${PKG}/usr/include/${PNAME}/internal
-install -d -m 755 ${PKG}/usr/include/${PNAME}/internal/custom
-install    -m 644 ${NAME}/include/${PNAME}/internal/custom/*.h* \
-                  ${PKG}/usr/include/${PNAME}/internal/custom
-install -d -m 755 ${PKG}/usr/include/${PNAME2}
-install    -m 644 ${NAME2}/include/${PNAME2}/*.h* ${PKG}/usr/include/${PNAME2}
-install -d -m 755 ${PKG}/usr/include/${PNAME2}/internal
-install    -m 644 ${NAME2}/include/${PNAME2}/internal/*.h* \
-                  ${PKG}/usr/include/${PNAME2}/internal
-install -d -m 755 ${PKG}/usr/include/${PNAME2}/internal/custom
-install    -m 644 ${NAME2}/include/${PNAME2}/internal/custom/*.h* \
-                  ${PKG}/usr/include/${PNAME2}/internal/custom
+install --mode 755 --directory ${PKG}/usr/include/${PNAME}
+install --mode 644 ${NAME}/include/${PNAME}/*.h* ${PKG}/usr/include/${PNAME}
+install --mode 755 --directory ${PKG}/usr/include/${PNAME}/internal
+install --mode 644 ${NAME}/include/${PNAME}/internal/*.h* \
+                   ${PKG}/usr/include/${PNAME}/internal
+install --mode 755 --directory ${PKG}/usr/include/${PNAME}/internal/custom
+install --mode 644 ${NAME}/include/${PNAME}/internal/custom/*.h* \
+                   ${PKG}/usr/include/${PNAME}/internal/custom
+install --mode 755 --directory ${PKG}/usr/include/${PNAME2}
+install --mode 644 ${NAME2}/include/${PNAME2}/*.h* ${PKG}/usr/include/${PNAME2}
+install --mode 755 --directory ${PKG}/usr/include/${PNAME2}/internal
+install --mode 644 ${NAME2}/include/${PNAME2}/internal/*.h* \
+                   ${PKG}/usr/include/${PNAME2}/internal
+install --mode 755 --directory ${PKG}/usr/include/${PNAME2}/internal/custom
+install --mode 644 ${NAME2}/include/${PNAME2}/internal/custom/*.h* \
+                   ${PKG}/usr/include/${PNAME2}/internal/custom
 # - gmock_gen and cppclean sources
-install -d -m 755 $PKG/usr/bin
-install    -m 755 ${NAME2}/scripts/generator/gmock_gen.py $PKG/usr/bin/gmock_gen
-install -d -m 755 $PKG/usr/share/${PNAME2}/cpp
-install    -m 644 ${NAME2}/scripts/generator/cpp/* $PKG/usr/share/${PNAME2}/cpp/
+install --mode 755 --directory $PKG/usr/bin
+install --mode 755 ${NAME2}/scripts/generator/gmock_gen.py $PKG/usr/bin/gmock_gen
+install --mode 755 --directory $PKG/usr/share/${PNAME2}/cpp
+install --mode 644 ${NAME2}/scripts/generator/cpp/* $PKG/usr/share/${PNAME2}/cpp/
 # - Libraries
-install -d -m 755 ${PKG}/usr/lib${LIBDIRSUFFIX}
-install    -m 644 ${NAME}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
-install    -m 644 ${NAME2}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
+install --mode 755 --directory ${PKG}/usr/lib${LIBDIRSUFFIX}
+install --mode 644 ${NAME}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
+install --mode 644 ${NAME2}/build/*.so ${PKG}/usr/lib${LIBDIRSUFFIX}
 # - Sources
-install -d -m 755 ${PKG}/usr/src/
-install    -m 644 ${SRC}/CMakeLists.txt ${PKG}/usr/src/CMakeLists.txt
+install --mode 755 --directory ${PKG}/usr/src/
+install --mode 644 ${SRC}/CMakeLists.txt ${PKG}/usr/src/CMakeLists.txt
 cp -a ${SRC}/${NAME}/  ${PKG}/usr/src/
 rm -rf ${PKG}/usr/src/${NAME}/{build,msvc}
 rm -rf ${PKG}/usr/src/${NAME}/test/*.pyc
@@ -139,43 +139,43 @@ bin_perms $PKG
 # Rename license file
 DOCDIR=$PKG/usr/doc/${PNAME}-${VERSION}
 ( cd $DOCDIR; mv README.md README )
-install -m 644 ${NAME}/CHANGES       $DOCDIR/CHANGES.${PNAME}
-install -m 644 ${NAME}/CONTRIBUTORS  $DOCDIR/CONTRIBUTORS.${PNAME}
-install -m 644 ${NAME}/LICENSE       $DOCDIR/LICENSE.${PNAME}
-install -m 644 ${NAME2}/CHANGES      $DOCDIR/CHANGES.${PNAME2}
-install -m 644 ${NAME2}/CONTRIBUTORS $DOCDIR/CONTRIBUTORS.${PNAME2}
-install -m 644 ${NAME2}/LICENSE      $DOCDIR/LICENSE.${PNAME2}
+install --mode 644 ${NAME}/CHANGES       $DOCDIR/CHANGES.${PNAME}
+install --mode 644 ${NAME}/CONTRIBUTORS  $DOCDIR/CONTRIBUTORS.${PNAME}
+install --mode 644 ${NAME}/LICENSE       $DOCDIR/LICENSE.${PNAME}
+install --mode 644 ${NAME2}/CHANGES      $DOCDIR/CHANGES.${PNAME2}
+install --mode 644 ${NAME2}/CONTRIBUTORS $DOCDIR/CONTRIBUTORS.${PNAME2}
+install --mode 644 ${NAME2}/LICENSE      $DOCDIR/LICENSE.${PNAME2}
 GEN_DIR=${NAME2}/scripts/generator/
-install -m 644 ${GEN_DIR}/LICENSE    $DOCDIR/LICENSE.gmock_gen
-install -m 644 ${GEN_DIR}/README     $DOCDIR/README.gmock_gen
-install -m 644 ${GEN_DIR}/README.cppclean $DOCDIR/README.cppclean
+install --mode 644 ${GEN_DIR}/LICENSE    $DOCDIR/LICENSE.gmock_gen
+install --mode 644 ${GEN_DIR}/README     $DOCDIR/README.gmock_gen
+install --mode 644 ${GEN_DIR}/README.cppclean $DOCDIR/README.cppclean
 
 # GTest and GMock are both with BSD license, so isngle COPYING file is enough
-install -m 644 ${NAME}/LICENSE       $DOCDIR/COPYING
+install --mode 644 ${NAME}/LICENSE       $DOCDIR/COPYING
 
-install -m 755 -d $PKG/install
-install -m 644 $CWD/slack-desc     $PKG/install/slack-desc
-install -m 644 $CWD/slack-required $PKG/install/slack-required
+install --mode 755 --directory $PKG/install
+install --mode 644 $CWD/slack-desc     $PKG/install/slack-desc
+install --mode 644 $CWD/slack-required $PKG/install/slack-required
 
 SBDIR=$PKG/usr/src/slackbuilds/${PNAME}-${VERSION}
-install -m 755 -d $SBDIR
-install -m 644 $CWD/slack-desc          $SBDIR/slack-desc
-install -m 644 $CWD/slack-required      $SBDIR/slack-required
+install --mode 755 --directory $SBDIR
+install --mode 644 $CWD/slack-desc          $SBDIR/slack-desc
+install --mode 644 $CWD/slack-required      $SBDIR/slack-required
 if [ -e $CWD/${NAME}-${VERSION}.diff ]; then
-  install -m 644 $CWD/${NAME}-${VERSION}.diff $SBDIR/${NAME}-${VERSION}.diff
+install --mode 644 $CWD/${NAME}-${VERSION}.diff $SBDIR/${NAME}-${VERSION}.diff
 fi
-install -m 644 $CWD/${PNAME}.SlackBuild $SBDIR/${PNAME}.SlackBuild
+install --mode 644 $CWD/${PNAME}.SlackBuild $SBDIR/${PNAME}.SlackBuild
 
 # Pack
-PKGNAME=${PNAME}-${VERSION}-${ARCH}-${BUILD}${MYIN}
 cd $PKG
-makepkg -l y -c n $PKG_DIR/${PKGNAME}.txz
+PKGNAME=${NAME}-${VERSION}-${ARCH}-${BUILD}${MYIN}
+makepkg --chown n --linkadd y $PKG_DIR/${PKGNAME}.txz
 md5sum $PKG_DIR/${PKGNAME}.txz > $PKG_DIR/${PKGNAME}.txz.md5
-cp $CWD/slack-desc $PKG_DIR/${PKGNAME}.txt
+install --mode 644 $PKG/install/slack-desc $PKG_DIR/${PKGNAME}.txt
 
 # Clean up (optionally)
 if [ "$1" = "--cleanup" ]; then
-  rm -rf $SRC
-  rm -rf $PKG
+  rm --recursive $SRC
+  rm --recursive $PKG
 fi
 
