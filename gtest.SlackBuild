@@ -115,6 +115,8 @@ install --mode 644 --preserve-timestamps \
         $CWD/slack-desc     $PKG/install/slack-desc
 install --mode 644 --preserve-timestamps \
         $CWD/slack-required $PKG/install/slack-required
+install --mode 644 --preserve-timestamps \
+        $CWD/slack-suggests $PKG/install/slack-suggests
 
 SBDIR=$PKG/usr/src/slackbuilds/${PNAME}-${VERSION}
 install --mode 755 --directory $SBDIR
@@ -124,6 +126,8 @@ install --mode 644 --preserve-timestamps \
         $CWD/slack-desc              $SBDIR/slack-desc
 install --mode 644 --preserve-timestamps \
         $CWD/slack-required          $SBDIR/slack-required
+install --mode 644 --preserve-timestamps \
+        $CWD/slack-suggests          $SBDIR/slack-suggests
 if [ -e $CWD/${NAME}-${VERSION}.diff ]; then
 install --mode 644 --preserve-timestamps \
         $CWD/${NAME}-${VERSION}.diff $SBDIR/${PNAME}-${VERSION}.diff
