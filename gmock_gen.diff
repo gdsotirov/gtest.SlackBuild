@@ -1,0 +1,10 @@
+# Use Python 3 and set system path properly
+1c1
+< #!/usr/bin/env python
+---
+> #!/usr/bin/env python3
+24,25c24
+<   # Add the directory of this script to the path so we can import gmock_class.
+<   sys.path.append(os.path.dirname(__file__))
+---
+>   sys.path.append('/usr/share/gmock')

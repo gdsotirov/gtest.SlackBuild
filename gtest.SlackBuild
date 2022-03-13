@@ -88,6 +88,7 @@ cd ..
 install --mode 755 --directory $PKG/usr/bin
 install --mode 755 --preserve-timestamps \
         ${SRC}/${NAME2}/scripts/generator/gmock_gen.py $PKG/usr/bin/gmock_gen
+patch $PKG/usr/bin/gmock_gen $CWD/gmock_gen.diff
 install --mode 755 --directory $PKG/usr/share/${PNAME2}/cpp
 install --mode 644 --preserve-timestamps \
         ${SRC}/${NAME2}/scripts/generator/cpp/* $PKG/usr/share/${PNAME2}/cpp/
@@ -117,6 +118,8 @@ install --mode 644 --preserve-timestamps \
 
 SBDIR=$PKG/usr/src/slackbuilds/${PNAME}-${VERSION}
 install --mode 755 --directory $SBDIR
+install --mode 644 --preserve-timestamps \
+        $CWD/gmock_gen.diff          $SBDIR/gmock_gen.diff
 install --mode 644 --preserve-timestamps \
         $CWD/slack-desc              $SBDIR/slack-desc
 install --mode 644 --preserve-timestamps \
