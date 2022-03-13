@@ -23,7 +23,9 @@
 . ../../slack-package.conf
 
 NAME=googletest
+NAME2=googlemock
 PNAME=gtest
+PNAME2=gmock
 VERSION=1.11.0
 ARCH=${ARCH:-i586}
 BUILD=${BUILD:-1}
@@ -68,6 +70,7 @@ cmake -LAH \
       -DCMAKE_CXX_FLAGS="$SLKCFLAGS" \
       -DCMAKE_C_FLAGS="$SLKCFLAGS" \
       -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_INSTALL_LIBDIR=/usr/lib${LIBDIRSUFFIX} \
       -DCMAKE_SKIP_RPATH=ON \
       -DCMAKE_VERBOSE_MAKEFILE=ON \
       -Dgtest_build_samples=ON \
@@ -79,6 +82,22 @@ make --jobs 8 || exit 6
 LD_LIBRARY_PATH=${SRC}/build/lib make test || exit 61
 DESTDIR=$PKG make install || exit 7
 cd ..
+
+# Install manually the following
+# - gmock_gen utility
+install --mode 755 --directory $PKG/usr/bin
+install --mode 755 --preserve-timestamps \
+        ${SRC}/${NAME2}/scripts/generator/gmock_gen.py $PKG/usr/bin/gmock_gen
+install --mode 755 --directory $PKG/usr/share/${PNAME2}/cpp
+install --mode 644 --preserve-timestamps \
+        ${SRC}/${NAME2}/scripts/generator/cpp/* $PKG/usr/share/${PNAME2}/cpp/
+# - gtest and gmock sources
+install --mode 755 --directory ${PKG}/usr/src/${NAME}
+install --mode 644 --preserve-timestamps \
+        ${SRC}/CMakeLists.txt ${PKG}/usr/src/${NAME}/CMakeLists.txt
+cp -a ${SRC}/${NAME}/  ${PKG}/usr/src/${NAME}
+rm -rf ${PKG}/usr/src/${NAME}/${NAME}/test/__pycache__
+cp -a ${SRC}/${NAME2}/ ${PKG}/usr/src/${NAME}
 
 # Prepare the package
 bin_perms $PKG
